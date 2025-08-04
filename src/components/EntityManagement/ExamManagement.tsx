@@ -72,12 +72,13 @@ export const ExamManagement: React.FC = () => {
   );
 
   const columns = [
-    { key: "title", label: t('exams.title') },
-    { key: "exam_date", label: t('exams.date') },
-    { key: "max_mark", label: t('exams.maxMark') },
-    { key: "passing_mark", label: t('exams.passingMark') },
-    { key: "course_id", label: t('exams.courseId') },
-  ];
+  { key: "title", label: t('exams.title') },
+  { key: "exam_date", label: t('exams.date') },
+  { key: "max_mark", label: t('exams.maxMark') },
+  { key: "passing_mark", label: t('exams.passingMark') },
+  { key: "course", label: t('exams.courseTitle'), render: (_, row) => row.course?.title || "—" },
+];
+
 
   return (
     <div className="p-6 space-y-6">

@@ -46,6 +46,7 @@ export const StudentExamManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudentExam, setEditingStudentExam] = useState<StudentExam | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
+const [courses, setCourses] = useState<{ id: number; title: string }[]>([]);
 
   const fetchExams = async () => {
     try {
@@ -55,7 +56,19 @@ export const StudentExamManagement: React.FC = () => {
       console.error(t('messages.failedToFetch'), error);
     }
   };
-
+const fetchCourses = async () => {
+  try {
+    const response = await apiService.getAll('courses');
+    setCourses(response.courses || []);
+  } catch (error) {
+    console.error(t('messages.failedToFetch'), error);
+  }
+};
+const getCourseNameById = (courseId: number | undefined): string => {
+  if (!courseId) return t('common.notAvailable');
+  const course = courses.find((c) => c.id === courseId);
+  return course?.title || t('common.notAvailable');
+};
   const fetchStudentExams = async () => {
     setLoading(true);
     try {
@@ -81,6 +94,7 @@ export const StudentExamManagement: React.FC = () => {
   useEffect(() => {
     fetchExams();
     fetchStudentExams();
+    fetchCourses();
   }, []);
 
   const handleExamChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -170,76 +184,78 @@ export const StudentExamManagement: React.FC = () => {
   }));
 
   const columns = [
-    { 
-      key: 'student_name', 
-      label: t('studentExams.studentName'),
-      render: (_: any, record: StudentExamWithDetails) => (
-        <div className="flex items-center space-x-3">
-          <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-            <Users className="w-4 h-4 text-blue-600" />
-          </div>
-          <span className="font-medium text-gray-900">
-            {record.student?.name || t('common.notAvailable')}
-          </span>
+  { 
+    key: 'student_name', 
+    label: t('studentExams.studentName'),
+    render: (_: any, record: StudentExamWithDetails) => (
+      <div className="flex items-center space-x-3">
+        <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+          <Users className="w-4 h-4 text-blue-600" />
         </div>
-      )
-    },
-    { 
-      key: 'exam_name', 
-      label: t('studentExams.examName'),
-      render: (_: any, record: StudentExamWithDetails) => (
-        <div className="flex items-center space-x-2">
-          <Award className="w-4 h-4 text-purple-600" />
-          <span className="text-gray-900">{record.exam?.title || t('common.notAvailable')}</span>
-        </div>
-      )
-    },
-    { 
-      key: 'course_name', 
-      label: t('studentExams.courseName'),
-      render: (_: any, record: StudentExamWithDetails) => (
-        <div className="flex items-center space-x-2">
-          <BookOpen className="w-4 h-4 text-green-600" />
-          <span className="text-gray-900">{record.exam?.course?.title || t('common.notAvailable')}</span>
-        </div>
-      )
-    },
-    { 
-      key: 'max_mark', 
-      label: t('studentExams.maxMark'),
-      render: (_: any, record: StudentExamWithDetails) => (
-        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-          {record.exam?.max_mark || 0}
+        <span className="font-medium text-gray-900">
+          {record.student?.name || t('common.notAvailable')}
         </span>
-      )
-    },
-    { 
-      key: 'passing_mark', 
-      label: t('studentExams.passingMark'),
-      render: (_: any, record: StudentExamWithDetails) => (
-        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
-          {record.exam?.passing_mark || 0}
+      </div>
+    )
+  },
+  { 
+    key: 'exam_name', 
+    label: t('studentExams.examName'),
+    render: (_: any, record: StudentExamWithDetails) => (
+      <div className="flex items-center space-x-2">
+        <Award className="w-4 h-4 text-purple-600" />
+        <span className="text-gray-900">{record.exam?.title || t('common.notAvailable')}</span>
+      </div>
+    )
+  },
+  { 
+    key: 'course_name', 
+    label: t('studentExams.courseName'),
+    render: (_: any, record: StudentExamWithDetails) => (
+      <div className="flex items-center space-x-2">
+        <BookOpen className="w-4 h-4 text-green-600" />
+        <span className="text-gray-900">
+          {getCourseNameById(record.exam?.course?.id || record.exam?.course_id)}
         </span>
-      )
-    },
-    { 
-      key: 'student_mark', 
-      label: t('studentExams.studentMark'),
-      render: (value: number, record: StudentExamWithDetails) => {
-        const passingMark = record.exam?.passing_mark || 0;
-        const isPassing = value >= passingMark;
-        return (
-          <span className={`px-2 py-1 rounded-full text-sm font-semibold ${
-            isPassing 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-red-100 text-red-800'
-          }`}>
-            {value}
-          </span>
-        );
-      }
-    },
-  ];
+      </div>
+    )
+  },
+  { 
+    key: 'max_mark', 
+    label: t('studentExams.maxMark'),
+    render: (_: any, record: StudentExamWithDetails) => (
+      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+        {record.exam?.max_mark || 0}
+      </span>
+    )
+  },
+  { 
+    key: 'passing_mark', 
+    label: t('studentExams.passingMark'),
+    render: (_: any, record: StudentExamWithDetails) => (
+      <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+        {record.exam?.passing_mark || 0}
+      </span>
+    )
+  },
+  { 
+    key: 'student_mark', 
+    label: t('studentExams.studentMark'),
+    render: (value: number, record: StudentExamWithDetails) => {
+      const passingMark = record.exam?.passing_mark || 0;
+      const isPassing = value >= passingMark;
+      return (
+        <span className={`px-2 py-1 rounded-full text-sm font-semibold ${
+          isPassing 
+            ? 'bg-green-100 text-green-800' 
+            : 'bg-red-100 text-red-800'
+        }`}>
+          {value}
+        </span>
+      );
+    }
+  },
+];
 
   return (
     <div className="p-6 space-y-6">

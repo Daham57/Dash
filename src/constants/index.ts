@@ -1,4 +1,4 @@
-export const BASE_URL = 'https://d24f80be3d0d.ngrok-free.app/api/v1';
+export const BASE_URL = 'https://e095fab47230.ngrok-free.app/api/v1';
 
 export const QURAN_PARTS = Array.from({ length: 30 }, (_, i) => ({
   value: i + 1,
